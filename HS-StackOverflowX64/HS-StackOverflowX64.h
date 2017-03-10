@@ -45,3 +45,7 @@ typedef NTSTATUS(NTAPI *_NtQuerySystemInformation)(
 	ULONG SystemInformationLength,
 	PULONG ReturnLength
 	);
+
+typedef NTSTATUS(NTAPI *_RtlGetVersion)(
+	LPOSVERSIONINFOEXW lpVersionInformation
+	);

@@ -9,14 +9,14 @@
 							Exploits
 ```
 
-### HackSys Extreme Vulnerable Driver - x64 StackOverflow Exploit with SMEP Bypass
+### HackSys Extreme Vulnerable Driver - Windows 10 x64 StackOverflow Exploit with SMEP Bypass
 
 Classic StackOverflow exploit, which exploits a vulnerable function within the HEVD Kernel driver.
 
 # How does this exploit work:
 
 * 64 Bit version of the https://github.com/Cn33liz/HSEVD-StackOverflow exploit
-* Works almost the same, but in order to work on Windows 8.1 x64 we need to Bypass SMEP Kernel protections, which prevents us from jumping to our 64 bit usermode Shellcode.
+* Works almost the same, but in order to work on Windows 10 x64 we need to Bypass SMEP Kernel protections, which prevents us from jumping to our 64 bit usermode Shellcode.
 * In order to Bypass SMEP after controlling rip, we need to execute a SMEP bypass ROP chain on the stack (rsp = rip) which changes the value of the cr4 register and then jumps to our usermode Shellcode.
 * After running our x64 token stealing shellcode, we restore some registers, jump back to a SMEP enable ROP chain on the stack and return to IrpDeviceIoCtlHandler+0xe2
 
@@ -24,7 +24,7 @@ Classic StackOverflow exploit, which exploits a vulnerable function within the H
 Runs on:
 
 ```
-This exploits has been tested succesfully on Windows 8.1 x64 (Version 6.3.9600).
+This exploits has been tested succesfully on Windows 10 x64 v1607 (Version 10.0.14393).
 ``` 
 
 Compile Exploit:
