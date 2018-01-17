@@ -24,7 +24,7 @@ Classic StackOverflow exploit, which exploits a vulnerable function within the H
 Runs on:
 
 ```
-This exploits has been tested succesfully on Windows 10 x64 v1607 (Version 10.0.14393).
+This exploits has been tested succesfully on Windows 10 x64 v1709 (Version 10.0.16299.192).
 ``` 
 
 Compile Exploit:
